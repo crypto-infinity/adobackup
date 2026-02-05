@@ -1,0 +1,16 @@
+{
+  "name": "adobackup-api",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "@azure/storage-blob": "^12.15.0",
+    "archiver": "^5.3.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
