@@ -69,7 +69,7 @@ Content-Type: application/json
 }
 ```
 
-Se `repoUrl` non è specificato, viene restituito HTTP 500.
+Se `repoUrl` o altri parametri non sono specificati, viene restituito HTTP 400.
 
 ## Note
 - L'app richiede che git sia installato: lo script di startup lo installa ad ogni avvio.

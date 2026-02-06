@@ -69,7 +69,7 @@ app.post('/backup', async (req, res) => {
   
   let repoUrl = req.body && req.body.repoUrl;
   if (!repoUrl) {
-    res.status(500).json({ error: "repoUrl not set!" });
+    res.status(400).json({ error: "repoUrl not set!" });
   }
 
   const pat = process.env.AZURE_DEVOPS_PAT;
