@@ -69,7 +69,7 @@ app.post('/backup', async (req, res) => {
   
   let repoUrl = req.body && req.body.repoUrl;
   if (!repoUrl) {
-    repoUrl = 'https://dev.azure.com/datago-demo/dev_tests/_git/dev_tests';
+    res.status(500).json({ error: "repoUrl not set!" });
   }
 
   const pat = process.env.AZURE_DEVOPS_PAT;
