@@ -76,9 +76,10 @@ app.post('/backup', async (req, res) => {
   const accessKey = process.env.AZURE_STORAGE_KEY;
   const storageAccount = process.env.AZURE_STORAGE_ACCOUNT || 'adobackup90f5';
   const container = process.env.AZURE_STORAGE_CONTAINER || 'adobackupstorage';
+  const username = process.env.AZURE_DEVOPS_USERNAME || 'pat';
 
-  if (!accessKey || !pat) {
-    return res.status(400).json({ error: 'Access Key or PAT not set.' });
+  if (!accessKey || !pat || !username) {
+    return res.status(400).json({ error: 'Access Key/PAT or username not set.' });
   }
 
   try {
