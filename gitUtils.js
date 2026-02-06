@@ -16,7 +16,16 @@ async function cloneRepository(repoUrl, destinationPath, pat = null, username = 
   return new Promise((resolve, reject) => {
     exec(`git clone ${cloneUrl} "${destinationPath}"`, (error, stdout, stderr) => {
       if (error) return reject(stderr || error.message);
-      resolve(stdout);
+      // Dopo il clone, esegui git lfs pull se .gitattributes contiene lfs
+      const gitattributesPath = `${destinationPath}/.gitattributes`;
+      if (fs.existsSync(gitattributesPath) && fs.readFileSync(gitattributesPath, 'utf8').includes('filter=lfs')) {
+        exec('git lfs pull', { cwd: destinationPath }, (lfsErr, lfsStdout, lfsStderr) => {
+          if (lfsErr) return reject(lfsStderr || lfsErr.message);
+          resolve(stdout + '\n' + lfsStdout);
+        });
+      } else {
+        resolve(stdout);
+      }
     });
   });
 }
