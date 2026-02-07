@@ -82,7 +82,15 @@ app.post('/backup', async (req, res) => {
 
   try {
     console.log("Creating folder...");
-    const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 15);
+
+    // Massimo una folder all'ora (YYYYMMDDHH)
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hour = String(now.getHours()).padStart(2, '0');
+    const timestamp = `${year}${month}${day}${hour}`;
+
     const backupFolder = path.join(require('os').tmpdir(), `repo-backup-${timestamp}`);
     fs.mkdirSync(backupFolder, { recursive: true });
     const clonePath = path.join(require('os').tmpdir(), 'repo-clone');
