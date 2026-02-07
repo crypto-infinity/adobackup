@@ -71,6 +71,24 @@ Content-Type: application/json
 
 Se `repoUrl` o altri parametri non sono specificati, viene restituito HTTP 400.
 
+## Ottenimento token JWT
+**Request:**
+```
+POST https://login.microsoftonline.com/<TENANT_ID>/oauth2/v2.0/token" 
+-H "Content-Type: application/x-www-form-urlencoded" 
+-d "client_id=<CLIENT_ID>&scope=<API_AUDIENCE>/.default&client_secret=<CLIENT_SECRET>&grant_type=client_credentials"
+```
+
+**Response:**
+```
+{
+   "token_type":"Bearer",
+   "expires_in":3599,
+   "ext_expires_in":3599,
+   "access_token":"<TOKEN>"
+}
+```
+
 ## Note
 - L'app richiede che git sia installato: lo script di startup lo installa ad ogni avvio.
 - Puoi integrare questa API con Azure Logic Apps per backup schedulati di più repository.

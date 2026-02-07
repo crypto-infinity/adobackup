@@ -1,43 +1,42 @@
 require('dotenv').config();
-const express = require('express');
+
 const fs = require('fs');
 const path = require('path');
+
+const express = require('express');
 const { cloneRepository, compressFolder } = require('./gitUtils');
 const { uploadToBlobStorage } = require('./azureUtils');
+const { getJwtAuthMiddleware } = require('./jwtUtils');
+
 const swaggerUi = require('swagger-ui-express');
-const swaggerJsdoc = require('swagger-jsdoc');
-const cors = require('cors');
+const { swaggerSpec } = require('./swaggerSetup')
+
+/**
+ * EXPRESS
+ */
 
 const app = express();
-app.use(express.json());
 
-// Swagger setup
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Backup API',
-      version: '1.0.0',
-      description: 'API per il backup di repository su Azure Blob Storage',
-    },
-  },
-  apis: [__filename],
-};
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use(express.json());
+app.use('/backup', getJwtAuthMiddleware());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.get('/swagger.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerSpec);
-});
+/**
+ * ROTTE
+ */
+
 
 /**
  * @openapi
  * /backup:
  *   post:
  *     summary: Esegue il backup di una repository su Azure Blob Storage
+ *     description: |
+ *       Esegue il backup di una repository su Azure Blob Storage. Richiede autenticazione tramite Bearer JWT (OAuth2, Entra ID).
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
- *       required: false
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -46,8 +45,6 @@ app.get('/swagger.json', (req, res) => {
  *               repoUrl:
  *                 type: string
  *                 description: URL della repository da clonare
- *     description: |
- *       Esegue il backup di una repository su Azure Blob Storage.
  *     responses:
  *       200:
  *         description: Backup eseguito con successo
@@ -61,15 +58,16 @@ app.get('/swagger.json', (req, res) => {
  *                 blobName:
  *                   type: string
  *       400:
- *         description: Parametri mancanti
+ *         description: Parametri mancanti o credenziali non valide
+ *       401:
+ *         description: Autenticazione mancante o token non valido
  *       500:
  *         description: Errore interno
  */
 app.post('/backup', async (req, res) => {
-  
   let repoUrl = req.body && req.body.repoUrl;
   if (!repoUrl) {
-    res.status(400).json({ error: "repoUrl not set!" });
+    return res.status(400).json({ error: "repoUrl not set!" });
   }
 
   const pat = process.env.AZURE_DEVOPS_PAT;
@@ -78,8 +76,8 @@ app.post('/backup', async (req, res) => {
   const container = process.env.AZURE_STORAGE_CONTAINER || 'adobackupstorage';
   const username = process.env.AZURE_DEVOPS_USERNAME || 'pat';
 
-  if (!accessKey || !pat || !username) {
-    return res.status(400).json({ error: 'Access Key/PAT or username not set.' });
+  if (!accessKey || !pat) {
+    return res.status(400).json({ error: 'Access Key/PAT not set.' });
   }
 
   try {
@@ -104,6 +102,29 @@ app.post('/backup', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.toString() });
   }
+});
+
+/**
+ * @openapi
+ * /swagger.json:
+ *   get:
+ *     summary: Ottieni la specifica OpenAPI/Swagger dell'API
+ *     description: Restituisce il documento OpenAPI (swagger.json) per questa API.
+ *     tags:
+ *       - Documentazione
+ *     responses:
+ *       200:
+ *         description: Documento OpenAPI restituito con successo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       500:
+ *         description: Errore interno
+ */
+app.get('/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
 });
 
 const port = process.env.PORT || 3000;
