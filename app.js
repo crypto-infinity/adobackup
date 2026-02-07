@@ -121,7 +121,6 @@ app.post('/backup', async (req, res) => {
     const blobName = `${timestamp}/${zipFileName}`;
 
     console.log("Repository cloning...");
-    if (git_control_type == 'ado')
     await cloneRepository(repoUrl, clonePath, pat, username);
 
     console.log("Zipping...");
