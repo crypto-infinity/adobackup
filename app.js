@@ -91,9 +91,10 @@ app.post('/backup', async (req, res) => {
     const hour = String(now.getHours()).padStart(2, '0');
     const timestamp = `${year}${month}${day}${hour}`;
 
-    const backupFolder = path.join(require('os').tmpdir(), `repo-backup-${timestamp}`);
-    fs.mkdirSync(backupFolder, { recursive: true });
-    const clonePath = path.join(require('os').tmpdir(), 'repo-clone');
+    const operationId = Math.random().toString(36).substring(2, 10) + Date.now();
+    const tempFolder = path.join(require('os').tmpdir(), `repo-backup-${timestamp}-${operationId}`);
+    fs.mkdirSync(tempFolder, { recursive: true });
+    const clonePath = path.join(tempFolder, 'repo-clone');
 
     // Estrai il nome repo dalla URL (valido per Azure DevOps e GitHub, anche senza .git)
     let repoName = 'repo';
@@ -117,7 +118,7 @@ app.post('/backup', async (req, res) => {
       repoName = 'repo';
     }
     const zipFileName = `${repoName}.zip`;
-    const zipPath = path.join(backupFolder, zipFileName);
+    const zipPath = path.join(tempFolder, zipFileName);
     const blobName = `${timestamp}/${zipFileName}`;
 
     console.log("Repository cloning...");
