@@ -94,10 +94,34 @@ app.post('/backup', async (req, res) => {
     const backupFolder = path.join(require('os').tmpdir(), `repo-backup-${timestamp}`);
     fs.mkdirSync(backupFolder, { recursive: true });
     const clonePath = path.join(require('os').tmpdir(), 'repo-clone');
-    const zipPath = path.join(backupFolder, 'repo-backup.zip');
-    const blobName = `${timestamp}/repo-backup.zip`;
+
+    // Estrai il nome repo dalla URL (valido per Azure DevOps e GitHub, anche senza .git)
+    let repoName = 'repo';
+    try {
+      // Link validi:
+      // https://dev.azure.com/org/_git/reponame
+      // https://github.com/org/reponame.git
+      // https://github.com/org/reponame
+      const urlParts = repoUrl.split('/');
+      // Azure DevOps: cerca dopo '_git/'
+      const gitIndex = urlParts.indexOf('_git');
+      if (gitIndex !== -1 && urlParts.length > gitIndex + 1) {
+        repoName = urlParts[gitIndex + 1];
+      } else {
+        // GitHub: ultimo segmento, rimuovi .git se presente
+        repoName = urlParts[urlParts.length - 1].replace(/\.git$/, '');
+      }
+      // Fallback se vuoto
+      if (!repoName) repoName = 'repo';
+    } catch (e) {
+      repoName = 'repo';
+    }
+    const zipFileName = `${repoName}.zip`;
+    const zipPath = path.join(backupFolder, zipFileName);
+    const blobName = `${timestamp}/${zipFileName}`;
 
     console.log("Repository cloning...");
+    if (git_control_type == 'ado')
     await cloneRepository(repoUrl, clonePath, pat, username);
 
     console.log("Zipping...");

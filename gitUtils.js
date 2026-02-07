@@ -3,7 +3,7 @@ const fs = require('fs');
 const archiver = require('archiver');
 
 // Clona repository Git
-async function cloneRepository(repoUrl, destinationPath, pat = null, username = '') {
+async function cloneRepository(repoUrl, destinationPath, pat = null, username = 'pat') {
   if (fs.existsSync(destinationPath)) {
     fs.rmSync(destinationPath, { recursive: true, force: true });
   }
