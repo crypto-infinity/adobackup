@@ -113,7 +113,7 @@ Dove:
 Il campo `access_token` va usato come Bearer token nell'header Authorization delle chiamate API.
 
 ## Note
-- L'app richiede che git sia installato: lo script di startup lo installa ad ogni avvio.
+- L'app richiede che git sia installato: lo script di startup lo installa ad ogni avvio su container.
 - Puoi integrare questa API con Azure Logic Apps per backup schedulati di più repository.
 
 ## Swagger
